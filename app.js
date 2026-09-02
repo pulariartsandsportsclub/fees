@@ -733,6 +733,42 @@ function launchRazorpayPayment() {
     theme: {
       color: '#4f46e5'
     },
+    config: {
+      display: {
+        blocks: {
+          gpay: {
+            name: 'Google Pay / UPI',
+            instruments: [
+              {
+                method: 'upi',
+                flows: ['intent', 'qr', 'collect'],
+                apps: ['google_pay']
+              }
+            ]
+          },
+          cards: {
+            name: 'Debit / Credit Card',
+            instruments: [
+              {
+                method: 'card'
+              }
+            ]
+          }
+        },
+        sequence: ['block.gpay', 'block.cards'],
+        preferences: {
+          show_default_blocks: false
+        }
+      }
+    },
+    method: {
+      card: true,
+      upi: true,
+      netbanking: false,
+      wallet: false,
+      emi: false,
+      paylater: false
+    },
     handler: function (response) {
       if (response && response.razorpay_payment_id) {
         handleRazorpaySuccess(response.razorpay_payment_id, amount);
