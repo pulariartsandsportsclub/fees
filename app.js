@@ -608,12 +608,13 @@ function openPaymentModal() {
   const baseUpiParams = `pa=${encodeURIComponent(clubUpi)}&pn=${encodeURIComponent(cleanClubName)}&am=${amount}&cu=INR&tn=${encodeURIComponent(cleanNote)}`;
   const upiUri = `upi://pay?${baseUpiParams}`;
   
-  // Clean Amount-free UPI URI (bypasses NPCI bank "Payment limit exceeded" error on personal UPI IDs)
-  const baseUpiNoAmount = `pa=${encodeURIComponent(clubUpi)}&pn=${encodeURIComponent(cleanClubName)}&cu=INR&tn=${encodeURIComponent(cleanNote)}`;
-  const upiUriNoAmount = `upi://pay?${baseUpiNoAmount}`;
+  // Clean standard UPI URI (NPCI compliant, avoids P2P dynamic web intent risk block)
+  const cleanUpiUri = `upi://pay?pa=${encodeURIComponent(clubUpi)}&pn=${encodeURIComponent(cleanClubName)}&cu=INR`;
+  // Full UPI URI with prefilled amount for compatible apps
+  const dynamicUpiUri = `upi://pay?pa=${encodeURIComponent(clubUpi)}&pn=${encodeURIComponent(cleanClubName)}&am=${amount}&cu=INR&tn=${encodeURIComponent(cleanNote)}`;
 
-  // Generate QR code URL via QR Server API
-  const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=260x260&margin=10&data=${encodeURIComponent(upiUri)}`;
+  // Generate QR code using the clean universal format (works on GPay, PhonePe, Paytm without "UPI Risk Policy" error)
+  const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=260x260&margin=10&data=${encodeURIComponent(cleanUpiUri)}`;
 
   document.getElementById('upiQrCodeImg').src = qrUrl;
   document.getElementById('qrModalAmount').textContent = amount;
@@ -621,37 +622,36 @@ function openPaymentModal() {
   document.getElementById('successStateAmount').textContent = amount;
   
   // Set intent links
-  // Standard upi://pay works across Google Pay, PhonePe, Paytm, BHIM on Android and iOS without tez:// deprecation blocks
   const gpayBtn = document.getElementById('btnPayGPay');
   if (gpayBtn) {
-    gpayBtn.href = upiUri;
+    gpayBtn.href = dynamicUpiUri;
     gpayBtn.onclick = () => {
-      // Copy UPI ID automatically as a fallback convenience
       navigator.clipboard.writeText(clubUpi).catch(() => {});
+      showToast('UPI ID copied. If risk error occurs, pay directly to ' + clubUpi, 'info');
     };
   }
 
   const phonepeBtn = document.getElementById('btnPayPhonePe');
   if (phonepeBtn) {
-    phonepeBtn.href = `phonepe://pay?${baseUpiParams}`;
+    phonepeBtn.href = `phonepe://pay?pa=${encodeURIComponent(clubUpi)}&pn=${encodeURIComponent(cleanClubName)}&am=${amount}&cu=INR`;
   }
 
   const paytmBtn = document.getElementById('btnPayPaytm');
   if (paytmBtn) {
-    paytmBtn.href = `paytmmp://pay?${baseUpiParams}`;
+    paytmBtn.href = `paytmmp://pay?pa=${encodeURIComponent(clubUpi)}&pn=${encodeURIComponent(cleanClubName)}&am=${amount}&cu=INR`;
   }
 
   const upiBtn = document.getElementById('btnPayUpiIntent');
   if (upiBtn) {
-    upiBtn.href = upiUri;
+    upiBtn.href = dynamicUpiUri;
   }
 
   const gpayDirectBtn = document.getElementById('btnPayGPayDirect');
   if (gpayDirectBtn) {
-    gpayDirectBtn.href = upiUriNoAmount;
+    gpayDirectBtn.href = cleanUpiUri;
     gpayDirectBtn.onclick = () => {
       navigator.clipboard.writeText(clubUpi).catch(() => {});
-      showToast('UPI ID copied. Please enter ₹' + amount + ' in Google Pay.', 'info');
+      showToast('UPI ID copied. Enter ₹' + amount + ' in your UPI app.', 'info');
     };
   }
 
