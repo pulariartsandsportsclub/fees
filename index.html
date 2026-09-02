@@ -409,28 +409,42 @@
 
         <!-- Quick UPI App Launcher Buttons (Mobile Friendly) -->
         <div style="margin-bottom: 1.25rem;">
-          <div style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 10px;">Or tap to open on mobile:</div>
+          <div style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 10px;">Tap app to open directly on mobile:</div>
           
-          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 8px; margin-bottom: 12px;">
+          <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 10px;">
             <!-- Google Pay Button -->
-            <a id="btnPayGPay" href="#" class="btn btn-sm" style="background: #ffffff; color: #3c4043; border: 1.5px solid #dadce0; font-weight: 700; box-shadow: 0 1px 3px rgba(0,0,0,0.08);">
+            <a id="btnPayGPay" href="#" class="btn btn-sm" style="background: #ffffff; color: #3c4043; border: 1.5px solid #dadce0; font-weight: 700; box-shadow: 0 1px 3px rgba(0,0,0,0.08); justify-content: center;">
               <i class="fa-brands fa-google-pay" style="font-size: 1.4rem; color: #4285F4;"></i> GPay
             </a>
 
             <!-- PhonePe Button -->
-            <a id="btnPayPhonePe" href="#" class="btn btn-sm" style="background: #5f259f; color: #ffffff; font-weight: 700;">
+            <a id="btnPayPhonePe" href="#" class="btn btn-sm" style="background: #5f259f; color: #ffffff; font-weight: 700; justify-content: center;">
               <i class="fa-solid fa-mobile-screen"></i> PhonePe
             </a>
 
+            <!-- Paytm Button -->
+            <a id="btnPayPaytm" href="#" class="btn btn-sm" style="background: #002970; color: #00b9f5; font-weight: 700; justify-content: center;">
+              <i class="fa-solid fa-bolt"></i> Paytm
+            </a>
+
             <!-- Other UPI App -->
-            <a id="btnPayUpiIntent" href="#" class="btn btn-sm btn-primary" style="font-weight: 700;">
-              <i class="fa-solid fa-wallet"></i> Other UPI
+            <a id="btnPayUpiIntent" href="#" class="btn btn-sm btn-primary" style="font-weight: 700; justify-content: center;">
+              <i class="fa-solid fa-wallet"></i> Any UPI
             </a>
           </div>
 
-          <button type="button" class="btn btn-secondary btn-sm" style="width: 100%; margin-bottom: 12px;" onclick="copyUpiId()">
-            <i class="fa-solid fa-copy"></i> Copy Club UPI ID (<span id="copyUpiIdPreview">pulariclub@upi</span>)
+          <!-- Copy UPI Button -->
+          <button type="button" class="btn btn-secondary btn-sm" style="width: 100%; margin-bottom: 10px;" onclick="copyUpiId()">
+            <i class="fa-solid fa-copy"></i> Copy UPI ID: <strong id="copyUpiIdPreview" style="margin-left: 4px;">pulariclub@upi</strong>
           </button>
+
+          <!-- GPay Bank Limit Workaround Alert -->
+          <div style="background: #fef3c7; border: 1px solid #fde68a; border-radius: var(--radius-sm); padding: 8px 10px; font-size: 0.76rem; color: #92400e; text-align: left; line-height: 1.4;">
+            <div style="font-weight: 700; display: flex; align-items: center; gap: 5px; margin-bottom: 3px;">
+              <i class="fa-solid fa-circle-info"></i> If GPay shows "Payment limit exceeded":
+            </div>
+            <span>Some banks limit pre-filled links for personal UPI IDs. Simply tap <strong>"Copy UPI ID"</strong> above, open Google Pay, paste ID & enter the fee amount.</span>
+          </div>
         </div>
 
         <!-- UTR / Reference Number Verification -->
