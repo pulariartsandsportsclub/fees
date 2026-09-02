@@ -439,11 +439,14 @@
           </button>
 
           <!-- GPay Bank Limit Workaround Alert -->
-          <div style="background: #fef3c7; border: 1px solid #fde68a; border-radius: var(--radius-sm); padding: 8px 10px; font-size: 0.76rem; color: #92400e; text-align: left; line-height: 1.4;">
-            <div style="font-weight: 700; display: flex; align-items: center; gap: 5px; margin-bottom: 3px;">
-              <i class="fa-solid fa-circle-info"></i> If GPay shows "Payment limit exceeded":
+          <div style="background: #fef3c7; border: 1px solid #fde68a; border-radius: var(--radius-sm); padding: 9px 12px; font-size: 0.78rem; color: #92400e; text-align: left; line-height: 1.45;">
+            <div style="font-weight: 700; display: flex; align-items: center; gap: 5px; margin-bottom: 4px;">
+              <i class="fa-solid fa-triangle-exclamation"></i> Getting "Exceeded bank limit" error on GPay?
             </div>
-            <span>Some banks limit pre-filled links for personal UPI IDs. Simply tap <strong>"Copy UPI ID"</strong> above, open Google Pay, paste ID & enter the fee amount.</span>
+            <ul style="margin: 0; padding-left: 1.2rem; font-size: 0.75rem;">
+              <li><strong>Self-Payment:</strong> You cannot pay yourself using the same bank account / phone number.</li>
+              <li><strong>Personal UPI Limits:</strong> If bank blocks website links, tap <a id="btnPayGPayDirect" href="#" style="font-weight: 700; text-decoration: underline; color: #b45309;">Open UPI (Amount-Free)</a> or tap <strong>Copy UPI ID</strong> and pay directly inside GPay.</li>
+            </ul>
           </div>
         </div>
 
