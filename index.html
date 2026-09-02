@@ -12,6 +12,9 @@
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   
+  <!-- Razorpay Checkout SDK -->
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
   <!-- Stylesheet -->
   <link rel="stylesheet" href="styles.css">
 </head>
@@ -395,7 +398,30 @@
 
       <!-- Active Payment State -->
       <div id="qrPaymentActiveState">
-        <p style="color: var(--text-secondary); font-size: 0.9rem;">
+        <!-- Razorpay Instant Checkout Option (Recommended) -->
+        <div style="background: linear-gradient(135deg, rgba(79, 70, 229, 0.08) 0%, rgba(6, 182, 212, 0.08) 100%); border: 1.5px solid var(--primary-light); border-radius: var(--radius-md); padding: 1.15rem; margin-bottom: 1.25rem;">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
+            <span style="font-weight: 700; font-size: 0.95rem; color: var(--text-primary); display: flex; align-items: center; gap: 6px;">
+              <i class="fa-solid fa-bolt" style="color: var(--primary);"></i> Instant Online Payment
+            </span>
+            <span class="badge badge-paid" style="font-size: 0.65rem;">Auto-Verified</span>
+          </div>
+          <p style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 12px; text-align: left;">
+            Pay via Google Pay, PhonePe, Paytm, Cards, or Netbanking. Verified instantly without risk policy or bank limits.
+          </p>
+          <button type="button" class="btn btn-primary" onclick="launchRazorpayPayment()" style="font-weight: 700; font-size: 0.95rem; box-shadow: 0 4px 14px rgba(79, 70, 229, 0.35); padding: 0.85rem;">
+            <i class="fa-solid fa-shield-halved"></i> Pay ₹<span class="instantPayAmountText">1</span> via Razorpay Gateway
+          </button>
+        </div>
+
+        <!-- Divider -->
+        <div style="display: flex; align-items: center; margin: 1.25rem 0; color: var(--text-muted); font-size: 0.75rem;">
+          <div style="flex: 1; height: 1px; background: var(--border);"></div>
+          <span style="padding: 0 10px; font-weight: 700; letter-spacing: 0.04em;">OR DIRECT UPI QR / APP</span>
+          <div style="flex: 1; height: 1px; background: var(--border);"></div>
+        </div>
+
+        <p style="color: var(--text-secondary); font-size: 0.85rem;">
           Scan the QR code using Google Pay, PhonePe, Paytm, or BHIM
         </p>
 
@@ -653,6 +679,17 @@
         <div class="form-group">
           <label class="form-label" for="cfgDefaultFee">Default Monthly Fee Amount (₹)</label>
           <input type="number" id="cfgDefaultFee" class="form-input form-input-standalone" value="1" required>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="cfgRazorpayKeyId">
+            Razorpay Key ID 
+            <small style="color: var(--primary); font-weight: normal;">(For Instant Online Card/UPI Gateway)</small>
+          </label>
+          <input type="text" id="cfgRazorpayKeyId" class="form-input form-input-standalone" value="rzp_test_TX6N5Cf8sX1Ybx" placeholder="rzp_test_... or rzp_live_...">
+          <small style="color: var(--text-muted); font-size: 0.78rem; display: block; margin-top: 3px;">
+            Supports Google Pay, PhonePe, Cards, Netbanking with automatic instant receipt verification.
+          </small>
         </div>
 
         <div class="form-group">

@@ -9,6 +9,7 @@
 const DEFAULT_CONFIG = {
   clubName: 'Pulari Arts and Sports Club',
   clubUpiId: 'pulariclub@upi',
+  razorpayKeyId: 'rzp_test_TX6N5Cf8sX1Ybx',
   defaultFee: 1, // Set to ₹1 for easy live UPI/GPay testing
   adminPin: '1234',
   googleScriptUrl: 'https://script.google.com/macros/s/AKfycbwmz24w1VHTEdV_1mkKjYDcJPV09rk52U6N1YCnIi9wZM3oH9ZsfNEUFZyvA0letgAanw/exec', // Live Apps Script URL
@@ -693,6 +694,128 @@ function startPaymentPolling(memberId, month) {
   }, 4000);
 }
 
+// ==========================================
+// RAZORPAY PAYMENT GATEWAY INTEGRATION
+// ==========================================
+function launchRazorpayPayment() {
+  const member = state.currentMember;
+  if (!member) {
+    showToast('Please login as a member to pay fee', 'error');
+    return;
+  }
+
+  const amount = member.fee || state.config.defaultFee || 1;
+  const key = state.config.razorpayKeyId || 'rzp_test_TX6N5Cf8sX1Ybx';
+
+  if (typeof Razorpay === 'undefined') {
+    showToast('Razorpay payment gateway is loading or offline. Please check connection.', 'error');
+    return;
+  }
+
+  const options = {
+    key: key,
+    amount: Math.round(amount * 100), // amount in paise (1 INR = 100 paise)
+    currency: 'INR',
+    name: state.config.clubName || 'Pulari Arts and Sports Club',
+    description: `${getCurrentMonthName()} Monthly Fee - ${member.name}`,
+    image: 'PULARI.png',
+    prefill: {
+      name: member.name,
+      email: member.email || '',
+      contact: member.phone ? (member.phone.length === 10 ? '+91' + member.phone : member.phone) : ''
+    },
+    notes: {
+      memberId: member.id,
+      month: getCurrentMonthName()
+    },
+    theme: {
+      color: '#4f46e5'
+    },
+    handler: function (response) {
+      if (response && response.razorpay_payment_id) {
+        handleRazorpaySuccess(response.razorpay_payment_id, amount);
+      }
+    },
+    modal: {
+      ondismiss: function () {
+        console.log('Razorpay payment modal closed by user');
+      }
+    }
+  };
+
+  try {
+    const rzp = new Razorpay(options);
+    rzp.on('payment.failed', function (resp) {
+      showToast('Payment Failed: ' + (resp.error.description || 'Transaction declined'), 'error');
+    });
+    rzp.open();
+  } catch (err) {
+    console.error('Error opening Razorpay:', err);
+    showToast('Unable to open Razorpay gateway. Please use Direct UPI QR.', 'error');
+  }
+}
+
+async function handleRazorpaySuccess(paymentId, amount) {
+  const member = state.currentMember;
+  const currentMonth = getCurrentMonthName();
+  if (!member) return;
+
+  const nowStr = formatTimestamp(new Date());
+
+  // Update or insert payment in state
+  let payment = state.payments.find(p => p.memberId === member.id && p.month === currentMonth);
+  if (payment) {
+    payment.status = 'PAID';
+    payment.amount = amount;
+    payment.utr = paymentId;
+    payment.date = nowStr;
+    payment.verifiedBy = 'Razorpay/Auto';
+  } else {
+    payment = {
+      id: 'P' + Date.now(),
+      memberId: member.id,
+      month: currentMonth,
+      amount: amount,
+      status: 'PAID',
+      utr: paymentId,
+      date: nowStr,
+      verifiedBy: 'Razorpay/Auto'
+    };
+    state.payments.push(payment);
+  }
+
+  saveData();
+
+  // Play pleasant success chime via Web Audio API
+  playSuccessChime();
+
+  // Switch to glowing green tick state
+  document.getElementById('qrPaymentActiveState').classList.add('hidden');
+  document.getElementById('qrPaymentSuccessState').classList.remove('hidden');
+
+  // Sync with Google Sheet
+  if (state.config.googleScriptUrl) {
+    try {
+      callGoogleAppsScript('submitPayment', {
+        memberId: member.id,
+        memberName: member.name,
+        email: member.email,
+        phone: member.phone,
+        month: currentMonth,
+        amount: amount,
+        utr: paymentId,
+        status: 'PAID',
+        date: nowStr
+      });
+    } catch (e) {
+      console.warn('Google Sheet payment sync error', e);
+    }
+  }
+
+  showToast(`Payment verified (${paymentId})! Receipt generated.`, 'success');
+  renderMemberDashboard();
+}
+
 async function handleInstantPaymentSuccess() {
   const member = state.currentMember;
   const currentMonth = getCurrentMonthName();
@@ -1198,6 +1321,7 @@ async function handleSaveSettings(event) {
   event.preventDefault();
   state.config.clubName = document.getElementById('cfgClubName').value.trim();
   state.config.clubUpiId = document.getElementById('cfgUpiId').value.trim();
+  state.config.razorpayKeyId = (document.getElementById('cfgRazorpayKeyId')?.value || '').trim() || 'rzp_test_TX6N5Cf8sX1Ybx';
   const newDefaultFee = parseInt(document.getElementById('cfgDefaultFee').value) || 1;
   state.config.defaultFee = newDefaultFee;
   state.config.adminPin = document.getElementById('cfgAdminPin').value.trim() || '1234';
@@ -1298,6 +1422,9 @@ function openModal(modalId) {
     if (modalId === 'settingsModal') {
       document.getElementById('cfgClubName').value = state.config.clubName;
       document.getElementById('cfgUpiId').value = state.config.clubUpiId;
+      if (document.getElementById('cfgRazorpayKeyId')) {
+        document.getElementById('cfgRazorpayKeyId').value = state.config.razorpayKeyId || 'rzp_test_TX6N5Cf8sX1Ybx';
+      }
       document.getElementById('cfgDefaultFee').value = state.config.defaultFee;
       document.getElementById('cfgAdminPin').value = state.config.adminPin;
       document.getElementById('cfgGoogleScriptUrl').value = state.config.googleScriptUrl || '';
