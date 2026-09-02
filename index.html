@@ -178,12 +178,18 @@
           
           <div id="pendingPaymentContent">
             <p style="color: var(--text-secondary); margin-bottom: 1.25rem;">
-              Your monthly subscription for <strong><span class="currentMonthSpan">September 2026</span></strong> is pending. You can pay instantly using Google Pay, PhonePe, Paytm or UPI QR code.
+              Your monthly subscription for <strong><span class="currentMonthSpan">September 2026</span></strong> is pending. Pay instantly online via Razorpay or direct UPI QR code.
             </p>
-            <button class="btn btn-primary" onclick="openPaymentModal()">
-              <i class="fa-solid fa-qrcode"></i>
-              <span>Pay ₹<span id="btnPayAmountText">1</span> via UPI</span>
-            </button>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px;">
+              <button class="btn btn-primary" onclick="launchRazorpayPayment()" style="box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);">
+                <i class="fa-solid fa-bolt"></i>
+                <span>Pay ₹<span class="instantPayAmountText">1</span> via Razorpay</span>
+              </button>
+              <button class="btn btn-secondary" onclick="openPaymentModal()">
+                <i class="fa-solid fa-qrcode"></i>
+                <span>Scan UPI QR Code</span>
+              </button>
+            </div>
           </div>
 
           <div id="paidPaymentContent" class="hidden">

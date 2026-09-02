@@ -705,24 +705,26 @@ function launchRazorpayPayment() {
   }
 
   const amount = member.fee || state.config.defaultFee || 1;
-  const key = state.config.razorpayKeyId || 'rzp_test_TX6N5Cf8sX1Ybx';
+  const key = (state.config.razorpayKeyId || 'rzp_test_TX6N5Cf8sX1Ybx').trim();
 
   if (typeof Razorpay === 'undefined') {
-    showToast('Razorpay payment gateway is loading or offline. Please check connection.', 'error');
+    showToast('Razorpay payment gateway is loading. Please try again in 2 seconds.', 'error');
     return;
   }
+
+  // Close our custom modal first so backdrop-filter doesn't capture clicks / block Razorpay iframe
+  closeModal('paymentModal');
 
   const options = {
     key: key,
     amount: Math.round(amount * 100), // amount in paise (1 INR = 100 paise)
     currency: 'INR',
     name: state.config.clubName || 'Pulari Arts and Sports Club',
-    description: `${getCurrentMonthName()} Monthly Fee - ${member.name}`,
-    image: 'PULARI.png',
+    description: `${getCurrentMonthName()} Fee - ${member.name}`,
     prefill: {
-      name: member.name,
+      name: member.name || '',
       email: member.email || '',
-      contact: member.phone ? (member.phone.length === 10 ? '+91' + member.phone : member.phone) : ''
+      contact: member.phone ? (member.phone.replace(/[^0-9]/g, '')) : ''
     },
     notes: {
       memberId: member.id,
@@ -738,7 +740,13 @@ function launchRazorpayPayment() {
     },
     modal: {
       ondismiss: function () {
-        console.log('Razorpay payment modal closed by user');
+        console.log('Razorpay payment modal dismissed');
+        // Re-open our modal if user cancelled without completing
+        const currentMonth = getCurrentMonthName();
+        const paid = state.payments.find(p => p.memberId === member.id && p.month === currentMonth && p.status === 'PAID');
+        if (!paid) {
+          openPaymentModal();
+        }
       }
     }
   };
@@ -746,12 +754,14 @@ function launchRazorpayPayment() {
   try {
     const rzp = new Razorpay(options);
     rzp.on('payment.failed', function (resp) {
-      showToast('Payment Failed: ' + (resp.error.description || 'Transaction declined'), 'error');
+      showToast('Payment Failed: ' + (resp.error?.description || 'Transaction declined'), 'error');
+      openPaymentModal();
     });
     rzp.open();
   } catch (err) {
     console.error('Error opening Razorpay:', err);
     showToast('Unable to open Razorpay gateway. Please use Direct UPI QR.', 'error');
+    openPaymentModal();
   }
 }
 
@@ -789,9 +799,11 @@ async function handleRazorpaySuccess(paymentId, amount) {
   // Play pleasant success chime via Web Audio API
   playSuccessChime();
 
-  // Switch to glowing green tick state
+  // Open modal and switch to glowing green tick state
   document.getElementById('qrPaymentActiveState').classList.add('hidden');
   document.getElementById('qrPaymentSuccessState').classList.remove('hidden');
+  document.getElementById('successStateAmount').textContent = amount;
+  openModal('paymentModal');
 
   // Sync with Google Sheet
   if (state.config.googleScriptUrl) {
