@@ -737,12 +737,10 @@ function launchRazorpayPayment() {
       display: {
         blocks: {
           gpay: {
-            name: 'Google Pay / UPI',
+            name: 'Google Pay / UPI (QR & App)',
             instruments: [
               {
-                method: 'upi',
-                flows: ['intent', 'qr', 'collect'],
-                apps: ['google_pay']
+                method: 'upi'
               }
             ]
           },
